@@ -51,6 +51,7 @@
 >     z.aggregate("x")(_ + _, _+_)
 >     res116: String = xxdefxabc  注：多次计算时，结果也可能出现xxabcxdef，即分区间的计算  
 >     不保证计算顺序
+
 - 例子3  
 >     // Below are some more advanced examples. Some are quite tricky to work out.
 >     
