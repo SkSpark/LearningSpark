@@ -30,8 +30,7 @@
 >     z.aggregate(5)(math.max(_, _), _ + _)
 >     res29: Int = 16
 
-- 例子2
-    
+- 例子2  
 >     val z = sc.parallelize(List("a","b","c","d","e","f"),2)
 >     
 >     //lets first print out the contents of the RDD with partition labels
@@ -51,10 +50,8 @@
 >     //  - once when combining all the partitions in the second reduce function.
 >     z.aggregate("x")(_ + _, _+_)
 >     res116: String = xxdefxabc  注：多次计算时，结果也可能出现xxabcxdef，即分区间的计算  
->     不保证计算顺序  
-
-- 例子3
-    
+>     不保证计算顺序
+- 例子3  
 >     // Below are some more advanced examples. Some are quite tricky to work out.
 >     
 >     val z = sc.parallelize(List("12","23","345","4567"),2)
@@ -79,7 +76,8 @@
 >     res144: String = 11  
 >     计算步骤：分区1的计算同上一个例子，结果为1，看分区2的计算：首先计算的是("","")=>math.min  
 >     (x.length, y.length)，结果是0，然后计算的是(0, "345")=>math.min(x.length, y.length),结果  
->     是1，最后的结果是11。从这个例子看出，计算结果依赖了分区里面的数据排序，这是一种不好的设计。
+>     是1，最后的结果是11。从这个例子看出，计算结果依赖了分区里面的数据排序，这是一种不好的设计。  
+
 ### aggregateByKey [Pair] ###
 - 计算原理跟aggregate是类似的，不同之处在于：**聚集操作作用在同一个key上面，初始化值参加分区间的计算**  
 
@@ -90,7 +88,6 @@
 >     def aggregateByKey[U](zeroValue: U, partitioner: Partitioner)(seqOp: (U, V) ⇒ U, combOp: (U, U) ⇒ U)(implicit arg0: ClassTag[U]): RDD[(K, U)]
 
 - 例子  
-
 > 
 >     val pairRDD = sc.parallelize(List( ("cat",2), ("cat", 5), ("mouse", 4),("cat", 12), ("dog", 12), ("mouse", 2)), 2)
 >     
@@ -112,16 +109,15 @@
 >     res4: Array[(String, Int)] = Array((dog,100), (cat,200), (mouse,200))  
 >     分析：分两个分区进行计算，首先计算出分区1中cat，mouse和dog的最大值，初始值参加计算，结果是(cat,100),  
 >     (mouse,100);分区2中cat，mouse和dog的最大值为(cat,100),(mouse,100),(dog,100)。最后结果是把key值相同的结  
->     果相加(cat,200),(mouse,200),(dog,100)，此时初始值是不参加计算的。
+>     果相加(cat,200),(mouse,200),(dog,100)，此时初始值是不参加计算的。  
+
 ### cartesian ###
 - 笛卡尔乘积:将两个RDD进行计算，第一个RDD的每一个元素都与第二个RDD的每一个元素进行join操作，将结果返回成为新  的RDD。笛卡尔积对内存消耗很大。  
   
 - Listing Variants  
-
 >     def cartesian[U: ClassTag](other: RDD[U]): RDD[(T, U)]  
 
 - 例子  
-
 >     val x = sc.parallelize(List(1,2,3,4,5))
 >     val y = sc.parallelize(List(6,7,8,9,10))
 >     x.cartesian(y).collect
@@ -135,7 +131,6 @@
 >     def checkpoint()  
 
 - 例子  
-
 >     sc.setCheckpointDir("my_directory_name")
 >     val a = sc.parallelize(1 to 4)
 >     a.checkpoint
@@ -147,7 +142,6 @@
 >     res23: Long = 4  
 
 - 解读  
-
 >     转自：http://blog.csdn.net/xiao_jun_0820/article/details/50475351
 >     /**
 >     * Mark this RDD for checkpointing. It will be saved to a file inside the checkpoint
@@ -168,5 +162,4 @@
 >     计算代价非常高的情况，适当进行checkpoint会有很大的好处。  
 
 - 引申阅读  
-
 >     http://www.tuicool.com/articles/qQ3eYv 《Spark的Cache和Checkpoint》
