@@ -7,7 +7,8 @@
 - 它有初始化值得概念：`initial value`，这个值会应用在分区内和分区间计算两个层面。
 - 分区间的计算不保证顺序  
 
-- 例子1
+- 例子1  
+
 >     val z = sc.parallelize(List(1,2,3,4,5,6), 2)
 >     
 >     // lets first print out the contents of the RDD with partition labels
@@ -90,6 +91,7 @@
 >     def aggregateByKey[U](zeroValue: U, partitioner: Partitioner)(seqOp: (U, V) ⇒ U, combOp: (U, U) ⇒ U)(implicit arg0: ClassTag[U]): RDD[(K, U)]
 
 - 例子  
+
 > 
 >     val pairRDD = sc.parallelize(List( ("cat",2), ("cat", 5), ("mouse", 4),("cat", 12), ("dog", 12), ("mouse", 2)), 2)
 >     
@@ -119,7 +121,8 @@
 
 >     def cartesian[U: ClassTag](other: RDD[U]): RDD[(T, U)]  
 
-- 例子
+- 例子  
+
 >     val x = sc.parallelize(List(1,2,3,4,5))
 >     val y = sc.parallelize(List(6,7,8,9,10))
 >     x.cartesian(y).collect
@@ -132,7 +135,8 @@
 - Listing Variants
 >     def checkpoint()  
 
-- 例子
+- 例子  
+
 >     sc.setCheckpointDir("my_directory_name")
 >     val a = sc.parallelize(1 to 4)
 >     a.checkpoint
@@ -144,6 +148,7 @@
 >     res23: Long = 4  
 
 - 解读  
+
 >     转自：http://blog.csdn.net/xiao_jun_0820/article/details/50475351
 >     /**
 >     * Mark this RDD for checkpointing. It will be saved to a file inside the checkpoint
@@ -163,5 +168,6 @@
 >     次产生的rdd,然后再执行2次迭代完成总共1000的迭代，这样效率就很高，比较适用于迭代计算非常复杂的情况，也就是恢复  
 >     计算代价非常高的情况，适当进行checkpoint会有很大的好处。  
 
-- 引申  
+- 引申阅读  
+
 >     http://www.tuicool.com/articles/qQ3eYv 《Spark的Cache和Checkpoint》
