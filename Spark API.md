@@ -1,5 +1,5 @@
 ##Spark API##
-> 资源来源：http://homepage.cs.latrobe.edu.au/zhe/ZhenHeSparkRDDAPIExamples.html#aggregateByKey
+> 资源来源：http://homepage.cs.latrobe.edu.au/zhe/ZhenHeSparkRDDAPIExamples.html
 
 ### aggregate ###
 - 它允许应用两个renduce函数，第一个reduce函数做`partition`分区内（**intra partitions**）的计算，  
@@ -7,8 +7,7 @@
 - 它有初始化值得概念：`initial value`，这个值会应用在分区内和分区间计算两个层面。
 - 分区间的计算不保证顺序  
 
-- 例子1  
-
+- 例子1
 >     val z = sc.parallelize(List(1,2,3,4,5,6), 2)
 >     
 >     // lets first print out the contents of the RDD with partition labels
