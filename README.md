@@ -8,3 +8,5 @@
 在处理业务方问题过程中，发现自己对Spark官方文档了解不够全面和深入，开个主题把官方文档上的一些精华做下整理。
 - 开始日期：2016-11-15
 - 任务状态：doing
+
+### [Structured Streaming](https://github.com/alixGuo/LearningSpark/blob/master/Structured%20Streaming.md)
