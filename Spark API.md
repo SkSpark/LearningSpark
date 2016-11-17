@@ -164,3 +164,80 @@
 
 - 引申阅读  
 >     http://www.tuicool.com/articles/qQ3eYv 《Spark的Cache和Checkpoint》
+
+###coalesce, repartition
+- 将RDD重新组合成确定数目的分区，对于coalesce来说，如果第二个参数shuffle设置为false，则不能讲分区数目增大，只能减小。
+- Listing Variants
+> def coalesce ( numPartitions : Int , shuffle : Boolean = false ): RDD
+> [T] def repartition ( numPartitions : Int ): RDD [T]
+
+- 例子
+> val y = sc.parallelize(1 to 10, 10) val z = y.coalesce(2, false)
+> z.partitions.length res9: Int = 2
+
+### cogroup [Pair], groupWith [Pair]
+- 对两个RDD中的KV元素，每个RDD中相同key中的元素分别聚合成一个集合。与reduceByKey不同的是针对两个RDD中相同的key的元素进行合并.
+
+- 例子
+> val a = sc.parallelize(List(1, 2, 1, 3), 1) 
+> val b = a.map((_, "b"))
+> val c = a.map((_, "c")) b.cogroup(c).collect 
+> res7: Array[(Int,(Iterable[String], Iterable[String]))] = Array(
+> (2,(ArrayBuffer(b),ArrayBuffer(c))),(3,(ArrayBuffer(b),ArrayBuffer(c))), (1,(ArrayBuffer(b,b),ArrayBuffer(c, c)))) val d = a.map((_, "d")) b.cogroup(c,
+> d).collect res9: Array[(Int, (Iterable[String], Iterable[String],
+> Iterable[String]))] = Array( (2，(ArrayBuffer(b),ArrayBuffer(c),ArrayBuffer(d))),
+> (3,(ArrayBuffer(b),ArrayBuffer(c),ArrayBuffer(d))), (1,(ArrayBuffer(b,b),ArrayBuffer(c, c),ArrayBuffer(d, d)))) 
+> val x =sc.parallelize(List((1, "apple"), (2, "banana"), (3, "orange"), (4,"kiwi")), 2) 
+> val y = sc.parallelize(List((5, "computer"), (1,
+> "laptop"), (1, "desktop"), (4, "iPad")), 2) 
+> x.cogroup(y).collect
+> res23: Array[(Int, (Iterable[String], Iterable[String]))] = Array(
+> (4,(ArrayBuffer(kiwi),ArrayBuffer(iPad))), 
+> (2,(ArrayBuffer(banana),ArrayBuffer())), 
+> (3,(ArrayBuffer(orange),ArrayBuffer())),
+> (1,(ArrayBuffer(apple),ArrayBuffer(laptop, desktop))),
+> (5,(ArrayBuffer(),ArrayBuffer(computer))))
+
+### collectAsMap [Pair]
+
+- 根collect算子相似，适用于key-value型的RDD，collect时保持其key-value的结构不变，最终输出scala map的类型。
+- 若存在相同key的键值对，后面的value会覆盖前面的value，key值保持唯一
+- Listing Variants
+> def collectAsMap(): Map[K, V]
+
+- 例子
+> val data = sc.parallelize(List((1, "a"), (1, "A"), (2, "b"), (2, "B"), (3, "c"), (3, "C")))
+> data.collectAsMap 
+> scala.collection.Map[Int,String] = Map(2 -> B, 1 -> A, 3 -> C)
+> **解读**：collect结果是Array[(Int, String)] = Array((1,a), (1,A), (2,b), (2,B), (3,c), (3,C))，collectAsMap结果是scala.collection.Map[Int,String] = Map(2 -> B, 1 -> A, 3 -> C)，可以看出对相同的key值来说，后面一个value将前一个value替换。
+
+### combineByKey[Pair]
+- 根据key进行combine操作，第二个算子先combine value，第三个算子combine结果。
+- 例子
+> val a =
+>sc.parallelize(List("dog","cat","gnu","salmon","rabbit","turkey","wolf","bear","bee"),3) 
+>val b = sc.parallelize(List(1,1,2,2,2,1,2,2,2), 3) 
+>val c = b.zip(a)
+>val d = c.combineByKey(List(_), (x:List[String], y:String) => y :: x, (x:List[String], y:List[String]) => x ::: y) 
+> d.collect 
+> res16:Array[(Int, List[String])] = Array((1,List(cat, dog, turkey)),
+> (2,List(gnu, rabbit, salmon, bee, bear, wolf)))
+
+- 参考
+> http://www.tuicool.com/articles/miueaqv 这篇文章分析的很好，推荐
+
+### countByKey [Pair]
+- 值得注意，该算子返回的是拥有同一个key的value的个数与key的组合
+
+- 例子
+> val c = sc.parallelize(List((3, "Gnu"), (3, "Yak"), (5, "Mouse"),
+> (3,"Dog")), 2)  c.countByKey  res3: scala.collection.Map[Int,Long] =
+> Map(3-> 3, 5 -> 1)
+
+### countByValue
+- 返回一个map，key是rdd里面的元素，value是这个元素的存在个数，相同元素个数累加。
+
+- 例子
+> val b = sc.parallelize(List(1,2,3,4,5,6,7,8,2,4,2,1,1,1,1,1))
+> b.countByValue 
+> res27: scala.collection.Map[Int,Long] = Map(5 -> 1, 8-> 1, 3 -> 1, 6 -> 1, 1 -> 6, 2 -> 3, 4 -> 2, 7 -> 1)
