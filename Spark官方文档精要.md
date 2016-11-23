@@ -31,4 +31,20 @@ Spark的编译运行默认使用Scala-2.11版本。如果使用Scala编写Spark�
 	使用spark-submit提交应用可以动态的传入spark任务参数，如`master`参数、`driver-memory`参数等。如果需要本地调试，则可以把`master`字段设置为`local`
 	
 - **Resilient Distributed Datasets (RDDs)**
+1、spark每个分区对应一个任务，每颗CPU对应2~4个分区
+2、可以从本地文件创建RDD，但是使用本地文件路径必须保证在每个节点都能访问该文件，如每个节点都有一份文件拷贝或者使用共享文件路径
+3、textFile(filePath)中的文件路径支持目录和通配符格式；使用textFile可以重新分区，但是分区的数目不能小于HDFS的block数目
+4、所有的变换都是lazy的，及变换只有在需要返回给driver运行结果时才会进行计算
+5、默认情况下，每次对一个RDD执行action运算，这个RDD都需要被重算。但是可用cache或者persist将RDD缓存在内存里面。中间结果缓存提高后续计算性能。
+6、理解RDD里面的闭包。看下面一段代码：
+>var counter = 0
+>var rdd = sc.parallelize(data)
+>// Wrong: Don't do this!!
+>rdd.foreach(x => counter += x)
+>println("Counter value: " + counter)
+
+在执行任务之前，spark首先会对task的闭包函数进行验证，闭包函数中使用的变量和函数对于executor来说必须是可见的，进而应用在RDD的元素上。
+
+如果在local模式下运行，这段代码可能会输出预期的结果，因为counter变量和driver进程是在一个jvm中；但是在集群模式下，counter变量已经被分发到执行器节点的jvm中，对counter的操作只能发生在执行器所在jvm的内存中，因此打印的内容也只能显示在executor的stdout里。通过在执行器jvm中改变counter值是无法改变driver端counter值的，所以在上面的代码中，counter的值还是0。如果确实有如上面代码逻辑的需求，spark里面提供了`accumulator`可以使用。
+打印RDD元素也是同样的道理，你无法在driver端打印executor端内存里面的变量。
 	
