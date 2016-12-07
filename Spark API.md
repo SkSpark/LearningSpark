@@ -232,3 +232,181 @@
 > val b = sc.parallelize(List(1,2,3,4,5,6,7,8,2,4,2,1,1,1,1,1))  
 > b.countByValue   
 > res27: scala.collection.Map[Int,Long] = Map(5 -> 1, 8-> 1, 3 -> 1, 6 -> 1, 1 -> 6, 2 -> 3, 4 -> 2, 7 -> 1)
+
+### distinct
+- 返回一个新的RDD，包含父RDD中的value，且每个value只存在一次。
+
+- 例子
+> val c = sc.parallelize(List("Gnu", "Cat", "Rat", "Dog", "Gnu", "Rat"), 2)
+> c.distinct.collect
+> res6: Array[String] = Array(Dog, Gnu, Cat, Rat)
+
+### filter and filterByRange
+- filter中的操作要适用于RDD中的每一个元素。比如下面例子中的第二条计算。
+
+- 例子 
+> val b = sc.parallelize(1 to 8) b.filter(_ < 4).collect 
+> res15:Array[Int] = Array(1, 2, 3) 
+> 
+> val a = sc.parallelize(List("cat","horse", 4.0, 3.5, 2, "dog"))
+> a.filter(_ < 4).collect 
+> res:16:error: value < is not a member of Any
+
+- filterByRange会把符合key值条件的key-value对过滤出来。应用该方法的前提是数据必须是key-value对的形式，而且必须经过排序。
+- 例子
+
+	```
+val randRDD = sc.parallelize(List( (2,"cat"), (6, "mouse"),(7, "cup"), (3, "book"), (4, "tv"), (1, "screen"), (5, "heater")), 3)
+val sortedRDD = randRDD.sortByKey()
+sortedRDD.filterByRange(1, 3).collect
+res66: Array[(Int, String)] = Array((1,screen), (2,cat), (3,book))
+	```
+
+### fold and foldByKey
+- fold把每个partition的值聚合起来
+- 例子
+
+	```
+val a = sc.parallelize(List(1,2,3), 3)
+a.fold(0)(_ + _)
+res59: Int = 6
+	```
+- foldByKey应用于双组分的tuples，把RDD中key值相同的value聚合起来
+- 例子
+
+	```
+val a = sc.parallelize(List("dog", "cat", "owl", "gnu", "ant"), 2)
+val b = a.map(x => (x.length, x))
+b.foldByKey("")(_ + _).collect
+res84: Array[(Int, String)] = Array((3,dogcatowlgnuant)
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "panther", "eagle"), 2)
+val b = a.map(x => (x.length, x))
+b.foldByKey("")(_ + _).collect
+res85: Array[(Int, String)] = Array((4,lion), (3,dogcat), (7,panther), (5,tigereagle))
+	```
+
+###getCheckpointFile
+- 返回RDD checkpoint的文件路径，checkpoint操作是lazy的，需要action操作来触发。
+- 例子
+
+	```
+sc.setCheckpointDir("/home/cloudera/Documents")
+val a = sc.parallelize(1 to 500, 5)
+val b = a++a++a++a++a
+b.getCheckpointFile
+res49: Option[String] = None
+
+b.checkpoint
+b.getCheckpointFile
+res54: Option[String] = None
+
+b.collect
+b.getCheckpointFile
+res57: Option[String] = Some(file:/home/cloudera/Documents/cb978ffb-a346-4820-b3ba-d56580787b20/rdd-40)
+	```
+
+### glom
+- 把每个partition的值组装成一个Array，然后嵌入到一个RDD里面。一个Array里面只包含一个partiton的内容。
+- 例子
+
+	```
+val a = sc.parallelize(1 to 100, 3)
+a.glom.collect
+res8: Array[Array[Int]] = Array(Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33), Array(34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66), Array(67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100))
+	```
+
+### groupBy  
+- groupBy接受一个map转换或者函数作为分组的依据。
+- 例子
+
+	```
+val a = sc.parallelize(1 to 9, 3)
+a.groupBy(x => { if (x % 2 == 0) "even" else "odd" }).collect
+res42: Array[(String, Seq[Int])] = Array((even,ArrayBuffer(2, 4, 6, 8)), (odd,ArrayBuffer(1, 3, 5, 7, 9)))
+	```
+
+### groupByKey
+- 使用key作为分组依据，对应RDD元素类型为key-value
+-  例子
+
+	```
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "spider", "eagle"), 2)
+val b = a.keyBy(_.length)
+b.groupByKey.collect
+res11: Array[(Int, Seq[String])] = Array((4,ArrayBuffer(lion)), (6,ArrayBuffer(spider)), (3,ArrayBuffer(dog, cat)), (5,ArrayBuffer(tiger, eagle)))
+	```
+
+### intersection 
+- 返回两个RDD中相同的元素
+- 例子
+
+	```
+val x = sc.parallelize(1 to 20)
+val y = sc.parallelize(10 to 30)
+val z = x.intersection(y)
+z.collect
+res74: Array[Int] = Array(16, 12, 20, 13, 17, 14, 18, 10, 19, 15, 11)
+	```
+
+### isCheckpointed  
+- 返回该RDD是否被checkPointed标志，注意，action操作才会真正出发checkpoint操作
+- 例子
+
+	```
+sc.setCheckpointDir("/home/cloudera/Documents")
+c.isCheckpointed
+res6: Boolean = false
+c.checkpoint
+c.isCheckpointed
+res8: Boolean = false
+c.collect
+c.isCheckpointed
+res9: Boolean = true
+	```
+
+### join [Pair]
+- 两个RDD做内关联，要求元素类型为key-value
+- 两个RDD钟只有key值相同的元素才会做关联
+- 例子
+
+	```
+val a = sc.parallelize(List("dog", "salmon", "salmon", "rat", "elephant"), 3)
+val b = a.keyBy(_.length)
+val c = sc.parallelize(List("dog","cat","gnu","salmon","rabbit","turkey","wolf","bear","bee"), 3)
+val d = c.keyBy(_.length)
+b.join(d).collect
+res0: Array[(Int, (String, String))] = Array((6,(salmon,salmon)), (6,(salmon,rabbit)), (6,(salmon,turkey)), (6,(salmon,salmon)), (6,(salmon,rabbit)), (6,(salmon,turkey)), (3,(dog,dog)), (3,(dog,cat)), (3,(dog,gnu)), (3,(dog,bee)), (3,(rat,dog)), (3,(rat,cat)), (3,(rat,gnu)), (3,(rat,bee)))
+	```
+
+### keyBy
+- 接受一个map转换或者函数，将RDD元素类型由单一值转换为key-value类型。map转换或者函数的结果作为key，原数据作为value
+- 例子
+
+	```
+val a = sc.parallelize(List("dog", "salmon", "salmon", "rat", "elephant"), 3)
+val b = a.keyBy(_.length)
+b.collect
+res26: Array[(Int, String)] = Array((3,dog), (6,salmon), (6,salmon), (3,rat), (8,elephant))
+	```
+
+### keys [Pair]  
+- 将RDD元素的key收集起来，形成一个新的RDD
+- 例子
+
+	```
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "panther", "eagle"), 2)
+val b = a.map(x => (x.length, x))
+b.keys.collect
+res2: Array[Int] = Array(3, 5, 4, 3, 7, 5)
+	```
+
+### lookup
+- 从RDD元素中key值中寻找，等于给定值的，将value收集出来形成一个新的RDD。
+- 例子
+
+	```
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "panther", "eagle"), 2)
+val b = a.map(x => (x.length, x))
+b.lookup(5)
+res0: Seq[String] = WrappedArray(tiger, eagle)
+	```
