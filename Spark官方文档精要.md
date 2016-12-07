@@ -49,14 +49,14 @@ Spark的编译运行默认使用Scala-2.11版本。如果使用Scala编写Spark�
 
 
 - **Shuffle Operation**  
-**会触发shuffle的操作:**  
-1、**Repartition**: `repartition`,`coalesce`  
-2、**Bykey**:`groupByKey` , `reduceByKey`  
-3、**join**: `cogroup`, `join`  
+	会触发shuffle的操作: 
+	1、**Repartition**: `repartition`,`coalesce`
+	2、**Bykey**:`groupByKey` , `reduceByKey`  
+	3、**join**: `cogroup`, `join`  
 
-**Performance Impact:**  
-1、Shuffle是一种资源密集型的操作，涉及到disk I/O,  network I/O和数据的序列化。Spark会产生一组map tasks来组织数据，一组reduce tasks来聚合数据。  
-2、Shuffle操作同时会在磁盘上产生大量的临时文件，直到相对应的RDD不再使用并垃圾回收后这些临时文件才会删除。对于长时间运行的Spark任务来说，临时文件会耗费大量的磁盘空间。临时空间所在的目录通过spark.local.dir配置。
+	**Performance Impact:**  
+	1、Shuffle是一种资源密集型的操作，涉及到disk I/O,  network I/O和数据的序列化。Spark会产生一组map tasks来组织数据，一组reduce tasks来聚合数据。  
+	2、Shuffle操作同时会在磁盘上产生大量的临时文件，直到相对应的RDD不再使用并垃圾回收后这些临时文件才会删除。对于长时间运行的Spark任务来说，临时文件会耗费大量的磁盘空间。临时空间所在的目录通过spark.local.dir配置。
 
 - **RDD Persistence**  
 1、RDD第一次在action操作中被计算时，才会缓存在内存中：
