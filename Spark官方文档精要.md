@@ -72,7 +72,6 @@ Spark的编译运行默认使用Scala-2.11版本。如果使用Scala编写Spark�
 - **Shared Variables**    
 1、broadcast variables:只读变量  
 使用场景：每个task计算都需要一个公共的而且数据量比较大的数据集时，可以将这个数据集广播到各个节点。  
-
 2、accumulators  
 能够并行实现adds和sums运算，只能增加。
 task线程不能读取accumulators的值，只能向acc增加数据；只有driver端进程才能读取acc数据。
