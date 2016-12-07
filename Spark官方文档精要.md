@@ -31,12 +31,12 @@ Spark的编译运行默认使用Scala-2.11版本。如果使用Scala编写Spark�
 	使用spark-submit提交应用可以动态的传入spark任务参数，如`master`参数、`driver-memory`参数等。如果需要本地调试，则可以把`master`字段设置为`local`
 	
 - **Resilient Distributed Datasets (RDDs)**  
-1、spark每个分区对应一个任务，每颗CPU对应2~4个分区
-2、可以从本地文件创建RDD，但是使用本地文件路径必须保证在每个节点都能访问该文件，如每个节点都有一份文件拷贝或者使用共享文件路径
-3、textFile(filePath)中的文件路径支持目录和通配符格式；使用textFile可以重新分区，但是分区的数目不能小于HDFS的block数目
-4、所有的变换都是lazy的，及变换只有在需要返回给driver运行结果时才会进行计算
-5、默认情况下，每次对一个RDD执行action运算，这个RDD都需要被重算。但是可用cache或者persist将RDD缓存在内存里面。中间结果缓存提高后续计算性能。
-6、理解RDD里面的闭包。看下面一段代码：
+1、spark每个分区对应一个任务，每颗CPU对应2~4个分区  
+2、可以从本地文件创建RDD，但是使用本地文件路径必须保证在每个节点都能访问该文件，如每个节点都有一份文件拷贝或者使用共享文件路径  
+3、textFile(filePath)中的文件路径支持目录和通配符格式；使用textFile可以重新分区，但是分区的数目不能小于HDFS的block数目  
+4、所有的变换都是lazy的，及变换只有在需要返回给driver运行结果时才会进行计算  
+5、默认情况下，每次对一个RDD执行action运算，这个RDD都需要被重算。但是可用cache或者persist将RDD缓存在内存里面。中间结果缓存提高后续计算性能。  
+6、理解RDD里面的闭包。看下面一段代码：  
 >var counter = 0
 >var rdd = sc.parallelize(data)
 >// Wrong: Don't do this!!
@@ -50,28 +50,28 @@ Spark的编译运行默认使用Scala-2.11版本。如果使用Scala编写Spark�
 
 - **Shuffle Operation**  
 **会触发shuffle的操作:**  
-1. **Repartition**: `repartition`,`coalesce`  
-2. **Bykey**:`groupByKey` , `reduceByKey`  
-3. **join**: `cogroup`, `join`  
+1、**Repartition**: `repartition`,`coalesce`  
+2、**Bykey**:`groupByKey` , `reduceByKey`  
+3、**join**: `cogroup`, `join`  
 
 **Performance Impact:**  
-1. Shuffle是一种资源密集型的操作，涉及到disk I/O,  network I/O和数据的序列化。Spark会产生一组map tasks来组织数据，一组reduce tasks来聚合数据。  
-2. Shuffle操作同时会在磁盘上产生大量的临时文件，直到相对应的RDD不再使用并垃圾回收后这些临时文件才会删除。对于长时间运行的Spark任务来说，临时文件会耗费大量的磁盘空间。临时空间所在的目录通过spark.local.dir配置。
+1、Shuffle是一种资源密集型的操作，涉及到disk I/O,  network I/O和数据的序列化。Spark会产生一组map tasks来组织数据，一组reduce tasks来聚合数据。  
+2、Shuffle操作同时会在磁盘上产生大量的临时文件，直到相对应的RDD不再使用并垃圾回收后这些临时文件才会删除。对于长时间运行的Spark任务来说，临时文件会耗费大量的磁盘空间。临时空间所在的目录通过spark.local.dir配置。
 
 - **RDD Persistence**  
-1. RDD第一次在action操作中被计算时，才会缓存在内存中：
+1、RDD第一次在action操作中被计算时，才会缓存在内存中：
 		```
 		The first time it is computed in an action, it will be kept in memory on the nodes.
 		```  
-2. RDD如果缓存在内存中，为了节省空间，是以序列化Java对象的方式存储的。  
-3. 在Shuffle过程中，为了提高计算性能，Spark也会主动去persist一些中间结果。  
-4. 对于`resulting RDD`，如果在后面的计算中要重用，建议进行persist提升计算性能。  
-5.  尽量不要采取spill磁盘的方法缓存数据，除非重算的代价特别大或者有大量的中间结果数据。一般来说，重算一个partition跟从磁盘读数据耗时是同样的。  
+2、RDD如果缓存在内存中，为了节省空间，是以序列化Java对象的方式存储的。  
+3、在Shuffle过程中，为了提高计算性能，Spark也会主动去persist一些中间结果。  
+4、对于`resulting RDD`，如果在后面的计算中要重用，建议进行persist提升计算性能。  
+5、尽量不要采取spill磁盘的方法缓存数据，除非重算的代价特别大或者有大量的中间结果数据。一般来说，重算一个partition跟从磁盘读数据耗时是同样的。  
 
 - **Shared Variables**    
-1. broadcast variables:只读变量  
+1、broadcast variables:只读变量  
 使用场景：每个task计算都需要一个公共的而且数据量比较大的数据集时，可以将这个数据集广播到各个节点。  
-2. accumulators  
+2、accumulators  
 能够并行实现adds和sums运算，只能增加。
 task线程不能读取accumulators的值，只能向acc增加数据；只有driver端进程才能读取acc数据。
 acc操作需要在action中触发，在具有lazy属性的map操作中，accu不能实现递增的效果。
