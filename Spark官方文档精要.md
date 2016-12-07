@@ -46,3 +46,33 @@ Spark的编译运行默认使用Scala-2.11版本。如果使用Scala编写Spark�
 	在执行任务之前，spark首先会对task的闭包函数进行验证，闭包函数中使用的变量和函数对于executor来说必须是可见的，进而应用在RDD的元素上。  
 
 	如果在local模式下运行，这段代码可能会输出预期的结果，因为counter变量和driver进程是在一个jvm中；但是在集群模式下，counter变量已经被分发到执行器节点的jvm中，对counter的操作只能发生在执行器所在jvm的内存中，因此打印的内容也只能显示在executor的stdout里。通过在执行器jvm中改变counter值是无法改变driver端counter值的，所以在上面的代码中，counter的值还是0。如果确实有如上面代码逻辑的需求，spark里面提供了`accumulator`可以使用。打印RDD元素也是同样的道理，你无法在driver端打印executor端内存里面的变量。
+
+
+- **Shuffle Operation**  
+	**会触发shuffle的操作:**
+	1. **Repartition**: `repartition`,`coalesce`
+	2. **Bykey**:`groupByKey` , `reduceByKey`
+	3. **join**: `cogroup`, `join`  
+
+	**Performance Impact:**  
+	1. Shuffle是一种资源密集型的操作，涉及到disk I/O,  network I/O和数据的序列化。Spark会产生一组map tasks来组织数据，一组reduce tasks来聚合数据。
+	2. Shuffle操作同时会在磁盘上产生大量的临时文件，直到相对应的RDD不再使用并垃圾回收后这些临时文件才会删除。对于长时间运行的Spark任务来说，临时文件会耗费大量的磁盘空间。临时空间所在的目录通过spark.local.dir配置。
+
+- **RDD Persistence**  
+1. RDD第一次在action操作中被计算时，才会缓存在内存中：
+		```
+		The first time it is computed in an action, it will be kept in memory on the nodes.
+		```
+2. RDD如果缓存在内存中，为了节省空间，是以序列化Java对象的方式存储的。
+3. 在Shuffle过程中，为了提高计算性能，Spark也会主动去persist一些中间结果。
+4. 对于`resulting RDD`，如果在后面的计算中要重用，建议进行persist提升计算性能。
+5.  尽量不要采取spill磁盘的方法缓存数据，除非重算的代价特别大或者有大量的中间结果数据。一般来说，重算一个partition跟从磁盘读数据耗时是同样的。
+
+- **Shared Variables**  
+1. broadcast variables:只读变量
+使用场景：每个task计算都需要一个公共的而且数据量比较大的数据集时，可以将这个数据集广播到各个节点。
+2. accumulators
+能够并行实现adds和sums运算，只能增加。
+task线程不能读取accumulators的值，只能向acc增加数据；只有driver端进程才能读取acc数据。
+acc操作需要在action中触发，在具有lazy属性的map操作中，accu不能实现递增的效果。
+	
