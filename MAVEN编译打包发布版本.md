@@ -30,8 +30,8 @@ export MAVEN_OPTS="-Xms512m -Xmx3g -XX:MaxPermSize=256m -XX:ReservedCodeCacheSiz
 - spark/dev目录下有make-distribution.sh，这个脚本是编译打包一体的。也可以改写该脚本，将编译命令去掉，手动编译，查看编译过程。
 
 #### 发布
-- 将本地定制化的spark上传至公司maven库。
-**需要配置几个地方：**
+- 将本地定制化的spark上传至公司maven库。  
+**需要配置几个地方：**  
 编辑机maven的setting文件，设置server，上传文件时会进行用户校验。
 ![Alt text](https://github.com/alixGuo/Resources/blob/master/2016121203.png)  
 
@@ -39,20 +39,14 @@ export MAVEN_OPTS="-Xms512m -Xmx3g -XX:MaxPermSize=256m -XX:ReservedCodeCacheSiz
 ![Alt text](https://github.com/alixGuo/Resources/blob/master/2016121204.png)
 
 
-整体发布命令：
-mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver  -DskipTests  deploy
+	整体发布命令：
+`mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver  -DskipTests  deploy`
 
-也可以使用`-pl`命令单独发布一个子项目：
+	也可以使用`-pl`命令单独发布一个子项目：
+`mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver -pl sql/catalyst -DskipTests clean deploy`
 
-```
- mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver -pl sql/catalyst -DskipTests clean deploy
-```
-
-或者单独上传一个jar包（脚本批量上传多个jar包）：  
-
-```
-for i in $(ls *.jar);do mvn deploy:deploy-file -DgroupId=org.apache.spark -DartifactId=spark-assembly_2.11 -Dversion=2.0.2.1-SNAPSHOT -Dpackaging=jar -Dfile=$i -Durl=http://maven.cnsuning.com/content/repositories/snapshots/ -DrepositoryId=snapshots; done
-```
+	或者单独上传一个jar包（脚本批量上传多个jar包）：  
+`for i in $(ls *.jar);do mvn deploy:deploy-file -DgroupId=org.apache.spark -DartifactId=spark-assembly_2.11 -Dversion=2.0.2.1-SNAPSHOT -Dpackaging=jar -Dfile=$i -Durl=http://maven.cnsuning.com/content/repositories/snapshots/ -DrepositoryId=snapshots; done`
 
 
 
