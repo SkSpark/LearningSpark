@@ -7,9 +7,9 @@
 export MAVEN_OPTS="-Xms512m -Xmx3g -XX:MaxPermSize=256m -XX:ReservedCodeCacheSize=64m"
 	```  
 
-- 编译Spark可用./build/mvn来编译，如果没连外网，需要将scala版本和zinc版本拷贝至build目录下。zinc主要用来编译提速和增量编译：
-**scala：** [scala-2.11.8](http://www.scala-lang.org/download/2.11.8.html)
-**zinc：** [zinc-0.3.9](https://github.com/alixGuo/Resources/blob/master/zinc-0.3.9.rar)
+- 编译Spark可用./build/mvn来编译，如果没连外网，需要将scala版本和zinc版本拷贝至build目录下。zinc主要用来编译提速和增量编译：  
+**scala：** [scala-2.11.8](http://www.scala-lang.org/download/2.11.8.html)  
+**zinc：** [zinc-0.3.9](https://github.com/alixGuo/Resources/blob/master/zinc-0.3.9.rar)  
 
 	**编译命令：**
 	```
