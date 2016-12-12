@@ -39,14 +39,20 @@ export MAVEN_OPTS="-Xms512m -Xmx3g -XX:MaxPermSize=256m -XX:ReservedCodeCacheSiz
 ![Alt text](https://github.com/alixGuo/Resources/blob/master/2016121204.png)
 
 
-	整体发布命令：
-`mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver  -DskipTests  deploy`
+	整体发布命令：  
+	```
+mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver  -DskipTests  deploy
+	```
 
 	也可以使用`-pl`命令单独发布一个子项目：
-`mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver -pl sql/catalyst -DskipTests clean deploy`
+	```
+mvn -Pyarn -Phadoop-2.4 -Dhadoop.version=2.4.0.8 -Phive -Phive-thriftserver -pl sql/catalyst -DskipTests clean deploy
+	```
 
 	或者单独上传一个jar包（脚本批量上传多个jar包）：  
-`for i in $(ls *.jar);do mvn deploy:deploy-file -DgroupId=org.apache.spark -DartifactId=spark-assembly_2.11 -Dversion=2.0.2.1-SNAPSHOT -Dpackaging=jar -Dfile=$i -Durl=http://maven.cnsuning.com/content/repositories/snapshots/ -DrepositoryId=snapshots; done`
+	```
+for i in $(ls *.jar);do mvn deploy:deploy-file -DgroupId=org.apache.spark -DartifactId=spark-assembly_2.11 -Dversion=2.0.2.1-SNAPSHOT -Dpackaging=jar -Dfile=$i -Durl=http://maven.cnsuning.com/content/repositories/snapshots/ -DrepositoryId=snapshots; done
+	```
 
 
 
